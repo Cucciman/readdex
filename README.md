@@ -2,9 +2,9 @@
 
 **Live:** https://cucciman.github.io/readdex
 
-I built this because I found myself opening the same 10-15 websites every morning — markets, business news, tech, a few newsletters — jumping between tabs and losing time. I wanted one place where everything I normally browse just shows up, without algorithms deciding what I see.
+I built this because I wanted in one place the websites I normally browse every morning for markets, business news, tech, etc. 
 
-Readdex is that page. It pulls live RSS feeds from the sources I actually read, organised by category, refreshed on demand. No accounts, no tracking, no noise. Just a single `index.html` file you can host for free on GitHub Pages.
+Readdex pulls live RSS feeds from the sources I actually read, organised by category, refreshed on demand. No accounts, no tracking, no noise. Just a single `index.html` file you can host for free on GitHub Pages.
 
 If you find it useful and want to build your own version with your own sources, the instructions below will get you there in a few minutes.
 
