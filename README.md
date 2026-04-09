@@ -2,7 +2,7 @@
 
 **Live:** https://cucciman.github.io/readdex
 
-I built this because I wanted in one place the websites I normally browse every morning for markets, business news, tech, etc. 
+I built this because I wanted in one place the websites I normally browse every morning for markets, business news, tech, etc.
 
 Readdex pulls live RSS feeds from the sources I actually read, organised by category, refreshed on demand. No accounts, no tracking, no noise. Just a single `index.html` file you can host for free on GitHub Pages.
 
@@ -17,7 +17,7 @@ If you find it useful and want to build your own version with your own sources, 
 | Substack | AC Notebook |
 | Markets | CNBC, Yahoo Finance, MarketWatch, Investing.com |
 | Business | BBC Business, The Guardian, The Economist, Fortune |
-| Strategy | SaaStr, a16z, Inc. |
+| Strategy | SaaStr, Strategy+Business, Inc. |
 | Tech | TechCrunch, Ars Technica, VentureBeat, Hacker News |
 
 ---
