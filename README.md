@@ -11,7 +11,7 @@ A personal news dashboard that pulls live RSS feeds from selected sources. Singl
 | Substack | AC Notebook |
 | Markets | CNBC, Yahoo Finance, MarketWatch, Investing.com |
 | Business | BBC Business, The Guardian, The Economist, Fortune |
-| Strategy | SaaStr, First Round Review, Inc. |
+| Strategy | SaaStr, a16z, Inc. |
 | Tech | TechCrunch, Ars Technica, VentureBeat, Hacker News |
 
 ---
