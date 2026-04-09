@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Readdex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:   #0d0d0d;
+  --paper: #f4f1ea;
+  --cream: #eae6dc;
+  --rule:  #d6d0c4;
+  --muted: #7a7469;
+  --red:   #c8102e;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--paper); color: var(--ink); font-family: 'IBM Plex Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+
+/* MASTHEAD */
+.masthead { position: sticky; top: 0; z-index: 200; background: var(--ink); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--red); }
+.masthead-title { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.6rem; letter-spacing: -0.02em; color: var(--paper); }
+.masthead-title span { color: var(--red); }
+.masthead-right { display: flex; align-items: center; gap: 20px; }
+.live-pill { display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: #aaa; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #4caf50; animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+#clock { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: #888; letter-spacing: 0.06em; }
+.btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; background: transparent; color: var(--paper); border: 1px solid #444; padding: 5px 14px; cursor: pointer; transition: all .15s; }
+.btn:hover { background: var(--red); border-color: var(--red); }
+.btn:disabled { opacity: .4; cursor: default; }
+
+/* TABS */
+.tab-bar { background: var(--paper); border-bottom: 1px solid var(--rule); padding: 0 32px; display: flex; overflow-x: auto; scrollbar-width: none; }
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 18px; cursor: pointer; white-space: nowrap; transition: all .15s; }
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--ink); border-bottom-color: var(--red); font-weight: 500; }
+
+/* LAYOUT */
+.layout { max-width: 1280px; margin: 0 auto; padding: 28px 32px 48px; }
+
+/* GRID */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+
+/* FEED CARD */
+.feed-card { background: var(--paper); display: flex; flex-direction: column; }
+
+.card-header {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--ink);
+}
+
+/* Left side: colored dot + label */
+.card-header-left { display: flex; align-items: center; gap: 8px; }
+.card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.card-source { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* Right side: just the category text, muted */
+.card-category { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+.card-items { flex: 1; }
+
+/* ARTICLE */
+.article { display: block; text-decoration: none; color: inherit; padding: 12px 16px; border-bottom: 1px solid var(--rule); transition: background .1s; }
+.article:last-child { border-bottom: none; }
+.article:hover { background: var(--cream); }
+.article-cat { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--red); margin-bottom: 4px; }
+.article-title { font-family: 'Playfair Display', serif; font-size: 0.85rem; font-weight: 700; line-height: 1.35; margin-bottom: 5px; color: var(--ink); }
+.article-desc { font-size: 0.7rem; line-height: 1.55; color: var(--muted); margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.article-time { font-family: 'IBM Plex Mono', monospace; font-size: 0.56rem; color: #b0aa9f; }
+
+/* STATES */
+.state-box { padding: 24px 16px; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.08em; line-height: 1.8; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--rule); border-top-color: var(--ink); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* HOW TO ADD SOURCES ─ collapsible */
+.guide-toggle { margin-top: 36px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+.guide-toggle-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); transition: color .15s; white-space: nowrap; }
+.guide-toggle:hover .guide-toggle-label { color: var(--ink); }
+.guide-hr { flex: 1; height: 1px; background: var(--rule); }
+.guide-arrow { font-size: 0.65rem; color: var(--muted); transition: transform .2s; display: inline-block; margin-left: 4px; }
+.guide-arrow.open { transform: rotate(180deg); }
+
+.guide-panel { display: none; margin-top: 20px; background: var(--ink); color: var(--paper); }
+.guide-panel.open { display: block; }
+
+.guide-inner { padding: 32px; max-width: 860px; }
+
+.guide-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 900; margin-bottom: 8px; }
+.guide-lead { font-size: 0.78rem; line-height: 1.7; color: #b0a89e; margin-bottom: 32px; }
+
+.guide-step { margin-bottom: 28px; }
+.guide-step-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
+.guide-step h3 { font-family: 'IBM Plex Sans', sans-serif; font-weight: 500; font-size: 0.85rem; margin-bottom: 8px; color: var(--paper); }
+.guide-step p { font-size: 0.75rem; line-height: 1.75; color: #b0a89e; margin-bottom: 10px; }
+.guide-step p code { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; background: #1e1e1e; padding: 1px 5px; border-radius: 2px; color: #e0d8cc; }
+
+pre {
+  background: #161616;
+  border-left: 3px solid var(--red);
+  padding: 14px 18px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  line-height: 1.75;
+  color: #e0d8cc;
+  overflow-x: auto;
+  margin-bottom: 10px;
+  white-space: pre;
+}
+
+.field-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.field-list li { font-size: 0.73rem; line-height: 1.5; color: #b0a89e; display: flex; gap: 10px; }
+.field-list li code { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: #e8e0d4; background: #1e1e1e; padding: 1px 6px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; }
+
+.guide-note { background: #1a1a1a; border: 1px solid #2a2a2a; padding: 12px 16px; font-size: 0.72rem; line-height: 1.7; color: #9a9288; margin-top: 12px; }
+.guide-note strong { color: #c8b89a; font-weight: 500; }
+
+.guide-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.guide-link { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--paper); background: #222; border: 1px solid #333; padding: 5px 12px; text-decoration: none; transition: all .15s; }
+.guide-link:hover { background: var(--red); border-color: var(--red); }
+
+/* FOOTER */
+.footer { margin-top: 32px; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.footer-txt { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--muted); letter-spacing: 0.06em; }
+
+@media (max-width: 640px) {
+  .masthead { padding: 12px 16px; }
+  .masthead-title { font-size: 1.2rem; }
+  #clock, .live-pill { display: none; }
+  .layout { padding: 16px 16px 32px; }
+  .tab-bar { padding: 0 16px; }
+  .guide-inner { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-title">Readd<span>ex</span></div>
+  <div class="masthead-right">
+    <div class="live-pill"><div class="live-dot"></div>Live</div>
+    <div id="clock"></div>
+    <button class="btn" id="refreshBtn" onclick="refreshAll()">&#8635; Refresh</button>
+  </div>
+</header>
+
+<nav class="tab-bar" id="tabBar"></nav>
+
+<main class="layout">
+  <div class="grid" id="grid"></div>
+
+  <!-- ── HOW TO ADD SOURCES ─────────────────────────────── -->
+  <div class="guide-toggle" onclick="toggleGuide()" id="guideToggle">
+    <div class="guide-hr"></div>
+    <span class="guide-toggle-label">How to add &amp; customise sources</span>
+    <span class="guide-arrow" id="guideArrow">&#9660;</span>
+    <div class="guide-hr"></div>
+  </div>
+
+  <div class="guide-panel" id="guidePanel">
+    <div class="guide-inner">
+      <h2>Adding your own feeds</h2>
+      <p class="guide-lead">Everything is configured in one place: the <code>SOURCES</code> array at the top of the <code>&lt;script&gt;</code> block in <code>index.html</code>. No build step, no terminal — just edit the file and reload.</p>
+
+      <div class="guide-step">
+        <div class="guide-step-num">Step 01</div>
+        <h3>Find the RSS URL for your source</h3>
+        <p>Most publications have a public RSS feed. Common patterns — try these first:</p>
+        <ul class="field-list">
+          <li><code>Substack</code> https://yourpublication.substack.com/feed</li>
+          <li><code>WordPress</code> https://yoursite.com/feed</li>
+          <li><code>Ghost</code> https://yoursite.com/rss</li>
+          <li><code>BBC sections</code> https://feeds.bbci.co.uk/news/business/rss.xml</li>
+          <li><code>TechCrunch</code> https://techcrunch.com/feed/</li>
+          <li><code>The Guardian</code> https://www.theguardian.com/business/rss</li>
+        </ul>
+        <p>Not sure if a site has RSS? Add <code>/feed</code> or <code>/rss</code> to the homepage URL and see if it loads XML. You can also paste any URL into <a class="guide-link" href="https://validator.w3.org/feed/" target="_blank" style="display:inline;padding:1px 6px;font-size:0.65rem">RSS Validator</a> to confirm it works.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">Step 02</div>
+        <h3>Wrap it through the rss2json proxy</h3>
+        <p>Browsers block direct RSS requests (CORS). The dashboard uses <strong>rss2json.com</strong> as a free proxy. Just prepend this to any RSS URL:</p>
+<pre>https://api.rss2json.com/v1/api.json?rss_url=YOUR_FEED_URL</pre>
+        <p>Example — AC Notebook on Substack:</p>
+<pre>https://api.rss2json.com/v1/api.json?rss_url=https://acnotebook.substack.com/feed</pre>
+        <div class="guide-note"><strong>Free tier:</strong> 10,000 requests/day — plenty for personal use. If you hit the limit, register at rss2json.com for a free API key and append <code>&amp;api_key=YOUR_KEY</code> to each URL.</div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">Step 03</div>
+        <h3>Add one object to <code>SOURCES[]</code></h3>
+        <p>Open <code>index.html</code>, find <code>const SOURCES = [</code>, and paste a new entry. Save and reload — done.</p>
+<pre>{
+  id:       "my-source",     // unique, no spaces
+  label:    "Source Name",   // shown in card header
+  category: "Markets",       // tab it appears under
+  color:    "#c8102e",       // dot color in the card header
+  rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=YOUR_FEED_URL"
+},</pre>
+        <p>Fields:</p>
+        <ul class="field-list">
+          <li><code>id</code> — unique key, no spaces (e.g. <code>"bbc-tech"</code>)</li>
+          <li><code>label</code> — name shown in the card header</li>
+          <li><code>category</code> — reuse an existing one to add to that tab, or write a new one to create a new tab</li>
+          <li><code>color</code> — hex color for the dot in the card header</li>
+          <li><code>rssUrl</code> — the proxied feed URL from step 2</li>
+        </ul>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">Step 04 — Optional</div>
+        <h3>Deploy to GitHub Pages</h3>
+        <p>This is a single static file — no server needed.</p>
+        <ul class="field-list">
+          <li><code>1.</code> Create a GitHub repository and upload <code>index.html</code> to the root</li>
+          <li><code>2.</code> Go to Settings → Pages → Source → Deploy from branch → main / root</li>
+          <li><code>3.</code> Live at <code>https://yourusername.github.io/reponame</code> within ~30 seconds</li>
+          <li><code>4.</code> To add sources later: edit <code>index.html</code> directly in GitHub's web editor and commit</li>
+        </ul>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">Troubleshooting</div>
+        <h3>Feed shows "unavailable"</h3>
+        <p>Some sources block automated access — common with paywalled sites (FT, WSJ, Bloomberg). In that case, look for an alternative open feed for the same source, or use a different publication in the same category. You can test any RSS URL at the validator below before adding it.</p>
+      </div>
+
+      <div class="guide-links">
+        <a class="guide-link" href="https://rss2json.com" target="_blank">rss2json.com</a>
+        <a class="guide-link" href="https://aboutfeeds.com" target="_blank">aboutfeeds.com</a>
+        <a class="guide-link" href="https://validator.w3.org/feed/" target="_blank">RSS Validator</a>
+        <a class="guide-link" href="https://rss.feedspot.com/business_news_rss_feeds/" target="_blank">Feed Directory</a>
+        <a class="guide-link" href="https://pages.github.com" target="_blank">GitHub Pages</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-txt">Readdex &mdash; open the guide above to add or customise sources</div>
+    <div class="footer-txt" id="lastUpdated"></div>
+  </footer>
+</main>
+
+<script>
+/* ================================================================
+   SOURCE CONFIG
+   ─────────────────────────────────────────────────────────────
+   Add a source: one new object in this array.
+   Scroll down or open the guide panel on the page for instructions.
+================================================================ */
+const SOURCES = [
+
+  // ── SUBSTACK ─────────────────────────────────────────────
+  {
+    id:       "acnotebook",
+    label:    "AC Notebook",
+    category: "Substack",
+    color:    "#2c5f8a",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://acnotebook.substack.com/feed"
+  },
+  // Add more Substack feeds here, e.g.:
+  // { id: "lenny", label: "Lenny's Newsletter", category: "Substack", color: "#5a3e8a",
+  //   rssUrl: "https://api.rss2json.com/v1/api.json?rss_url=https://www.lennysnewsletter.com/feed" },
+
+  // ── MARKETS ──────────────────────────────────────────────
+  {
+    id:       "cnbc",
+    label:    "CNBC",
+    category: "Markets",
+    color:    "#0057b8",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://www.cnbc.com/id/10001147/device/rss/rss.html"
+  },
+  {
+    id:       "yahoo-finance",
+    label:    "Yahoo Finance",
+    category: "Markets",
+    color:    "#6001d2",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://finance.yahoo.com/news/rssindex"
+  },
+  {
+    id:       "marketwatch",
+    label:    "MarketWatch",
+    category: "Markets",
+    color:    "#005b99",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.marketwatch.com/marketwatch/topstories/"
+  },
+  {
+    id:       "investing-com",
+    label:    "Investing.com",
+    category: "Markets",
+    color:    "#e84141",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://www.investing.com/rss/news.rss"
+  },
+
+  // ── BUSINESS ─────────────────────────────────────────────
+  {
+    id:       "bbc-business",
+    label:    "BBC Business",
+    category: "Business",
+    color:    "#bb1919",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/business/rss.xml"
+  },
+  {
+    id:       "guardian-biz",
+    label:    "The Guardian",
+    category: "Business",
+    color:    "#164f3a",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://www.theguardian.com/business/rss"
+  },
+  {
+    id:       "economist",
+    label:    "The Economist",
+    category: "Business",
+    color:    "#cc0000",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://www.economist.com/latest/rss.xml"
+  },
+  {
+    id:       "fortune",
+    label:    "Fortune",
+    category: "Business",
+    color:    "#1a4a7a",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://fortune.com/feed/fortune-feeds/?id=3230629"
+  },
+
+  // ── STRATEGY ─────────────────────────────────────────────
+  {
+    id:       "saastr",
+    label:    "SaaStr",
+    category: "Strategy",
+    color:    "#00a86b",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://www.saastr.com/feed/"
+  },
+  {
+    id:       "firstround",
+    label:    "First Round Review",
+    category: "Strategy",
+    color:    "#2d4a6b",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://review.firstround.com/feed.xml"
+  },
+  {
+    id:       "inc",
+    label:    "Inc.",
+    category: "Strategy",
+    color:    "#333333",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://www.inc.com/rss/"
+  },
+
+  // ── TECH ─────────────────────────────────────────────────
+  {
+    id:       "techcrunch",
+    label:    "TechCrunch",
+    category: "Tech",
+    color:    "#0a7c59",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/feed/"
+  },
+  {
+    id:       "ars-technica",
+    label:    "Ars Technica",
+    category: "Tech",
+    color:    "#d8742a",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/index"
+  },
+  {
+    id:       "venturebeat",
+    label:    "VentureBeat",
+    category: "Tech",
+    color:    "#333e6b",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.feedburner.com/venturebeat/SZYF"
+  },
+  {
+    id:       "hacker-news",
+    label:    "Hacker News",
+    category: "Tech",
+    color:    "#ff6600",
+    rssUrl:   "https://api.rss2json.com/v1/api.json?rss_url=https://hnrss.org/frontpage?points=100"
+  },
+
+];
+
+/* ================================================================
+   HELPERS
+================================================================ */
+function timeAgo(dateStr) {
+  if (!dateStr) return "";
+  const diff = (Date.now() - new Date(dateStr)) / 1000;
+  if (diff < 60) return "just now";
+  if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+  if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+  return Math.floor(diff / 86400) + "d ago";
+}
+
+function stripHtml(str) {
+  if (!str) return "";
+  return str.replace(/<[^>]*>/g, "").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ").trim();
+}
+
+/* ================================================================
+   CLOCK
+================================================================ */
+function updateClock() {
+  const now = new Date();
+  document.getElementById("clock").textContent =
+    now.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) +
+    "\u2002" +
+    now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+/* ================================================================
+   TABS
+================================================================ */
+let activeCategory = "All";
+
+function buildTabs() {
+  const categories = ["All", ...new Set(SOURCES.map(s => s.category))];
+  const bar = document.getElementById("tabBar");
+  bar.innerHTML = "";
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "tab" + (cat === activeCategory ? " active" : "");
+    btn.textContent = cat;
+    btn.onclick = () => {
+      activeCategory = cat;
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      btn.classList.add("active");
+      renderGrid();
+    };
+    bar.appendChild(btn);
+  });
+}
+
+/* ================================================================
+   RENDER
+================================================================ */
+const feedData = {};
+
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  const visible = activeCategory === "All"
+    ? SOURCES
+    : SOURCES.filter(s => s.category === activeCategory);
+
+  grid.innerHTML = "";
+  visible.forEach(source => {
+    const card = document.createElement("div");
+    card.className = "feed-card";
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-dot" style="background:${source.color}"></div>
+          <div class="card-source">${source.label}</div>
+        </div>
+        <div class="card-category">${source.category}</div>
+      </div>
+      <div class="card-items" id="items-${source.id}">
+        ${renderItems(feedData[source.id] || { loading: true })}
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderItems(state) {
+  if (state.loading) {
+    return `<div class="state-box"><div class="spinner"></div><br>Loading&#8230;</div>`;
+  }
+  if (state.error) {
+    return `<div class="state-box">Feed unavailable<br><span style="font-size:0.55rem;opacity:.6">Check the guide below for troubleshooting</span></div>`;
+  }
+  if (!state.items || state.items.length === 0) {
+    return `<div class="state-box">No items found</div>`;
+  }
+  return state.items.map(item => `
+    <a class="article" href="${item.link}" target="_blank" rel="noopener">
+      ${item.category ? `<div class="article-cat">${item.category}</div>` : ""}
+      <div class="article-title">${item.title}</div>
+      ${item.description ? `<div class="article-desc">${item.description}</div>` : ""}
+      <div class="article-time">${timeAgo(item.pubDate)}</div>
+    </a>`).join("");
+}
+
+function updateCard(id) {
+  const el = document.getElementById("items-" + id);
+  if (el) el.innerHTML = renderItems(feedData[id] || { loading: true });
+}
+
+/* ================================================================
+   FETCH
+================================================================ */
+async function fetchSource(source) {
+  feedData[source.id] = { loading: true };
+  updateCard(source.id);
+  try {
+    const res = await fetch(source.rssUrl);
+    const data = await res.json();
+    if (data.status !== "ok") throw new Error("Feed error");
+    feedData[source.id] = {
+      loading: false,
+      error: null,
+      items: (data.items || []).slice(0, 7).map(item => ({
+        title: item.title || "",
+        description: stripHtml(item.description || item.content || ""),
+        link: item.link || "#",
+        pubDate: item.pubDate,
+        category: (item.categories && item.categories[0]) || "",
+      }))
+    };
+  } catch (e) {
+    feedData[source.id] = { loading: false, error: true, items: [] };
+  }
+  updateCard(source.id);
+}
+
+async function refreshAll() {
+  const btn = document.getElementById("refreshBtn");
+  btn.disabled = true;
+  btn.textContent = "Loading\u2026";
+  await Promise.all(SOURCES.map(fetchSource));
+  btn.disabled = false;
+  btn.textContent = "\u21BB Refresh";
+  document.getElementById("lastUpdated").textContent =
+    "Updated " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+
+/* ================================================================
+   GUIDE TOGGLE
+================================================================ */
+function toggleGuide() {
+  document.getElementById("guidePanel").classList.toggle("open");
+  document.getElementById("guideArrow").classList.toggle("open");
+}
+
+/* ================================================================
+   INIT
+================================================================ */
+buildTabs();
+renderGrid();
+refreshAll();
+</script>
+</body>
+</html>
