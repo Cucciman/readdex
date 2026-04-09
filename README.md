@@ -1,6 +1,12 @@
 # Readdex
 
-A personal news dashboard that pulls live RSS feeds from selected sources. Single static file — no build step, no framework, no server. Host it on GitHub Pages for free.
+**Live:** https://cucciman.github.io/readdex
+
+I built this because I found myself opening the same 10-15 websites every morning — markets, business news, tech, a few newsletters — jumping between tabs and losing time. I wanted one place where everything I normally browse just shows up, without algorithms deciding what I see.
+
+Readdex is that page. It pulls live RSS feeds from the sources I actually read, organised by category, refreshed on demand. No accounts, no tracking, no noise. Just a single `index.html` file you can host for free on GitHub Pages.
+
+If you find it useful and want to build your own version with your own sources, the instructions below will get you there in a few minutes.
 
 ---
 
@@ -92,7 +98,7 @@ Delete its object from `SOURCES[]`. If it was the only source in that category, 
 1. Create a GitHub repository
 2. Upload `index.html` (and this `README.md`) to the root
 3. Go to **Settings → Pages → Source** → Deploy from branch → `main` / `root`
-4. Live at `https://yourusername.github.io/reponame` in ~30 seconds
+4. Live at `https://yourusername.github.io/readdex` in ~30 seconds
 
 To update sources later: edit `index.html` directly in GitHub's web editor, commit, done.
 
