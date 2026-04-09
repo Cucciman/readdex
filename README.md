@@ -17,7 +17,7 @@ If you find it useful and want to build your own version with your own sources, 
 | Substack | AC Notebook |
 | Markets | CNBC, Yahoo Finance, MarketWatch, Investing.com |
 | Business | BBC Business, The Guardian, The Economist, Fortune |
-| Strategy | SaaStr, Strategy+Business, Inc. |
+| Strategy | SaaStr, McKinsey, Inc. |
 | Tech | TechCrunch, Ars Technica, VentureBeat, Hacker News |
 
 ---
